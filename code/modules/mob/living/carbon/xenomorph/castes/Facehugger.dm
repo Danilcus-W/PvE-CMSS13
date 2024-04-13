@@ -60,8 +60,6 @@
 	icon_xeno = 'icons/mob/xenos/facehugger.dmi'
 	icon_xenonid = 'icons/mob/xenonids/facehugger.dmi'
 
-	ai_range = 24
-
 /mob/living/carbon/xenomorph/facehugger/initialize_pass_flags(datum/pass_flags_container/PF)
 	..()
 	if (PF)

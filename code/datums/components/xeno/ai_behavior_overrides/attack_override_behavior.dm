@@ -13,7 +13,7 @@
 	if(!.)
 		return
 
-	if(distance > 10)
+	if(distance > GLOB.xeno_ai_range)
 		return FALSE
 
 	return TRUE

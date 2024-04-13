@@ -9,8 +9,6 @@
 	var/ai_move_delay = 0
 	var/path_update_period = (0.5 SECONDS)
 	var/no_path_found = FALSE
-	var/ai_range = 16
-	var/max_travel_distance = 24
 
 	var/ai_timeout_time = 0
 	var/ai_timeout_period = 2 SECONDS
@@ -44,7 +42,7 @@
 		return
 
 	var/distance = get_dist(src, P.firer)
-	if(distance > max_travel_distance)
+	if(distance > GLOB.xeno_ai_range)
 		return
 
 	SSxeno_pathfinding.calculate_path(src, P.firer, distance, src, CALLBACK(src, PROC_REF(set_path)), list(src, P.firer))
@@ -74,8 +72,8 @@
 		current_path = null
 		return TRUE
 
-	if(QDELETED(current_target) || !current_target.ai_check_stat() || get_dist(current_target, src) > ai_range || COOLDOWN_FINISHED(src, forced_retarget_cooldown))
-		current_target = get_target(ai_range)
+	if(QDELETED(current_target) || !current_target.ai_check_stat() || get_dist(current_target, src) > GLOB.xeno_ai_range || COOLDOWN_FINISHED(src, forced_retarget_cooldown))
+		current_target = get_target(GLOB.xeno_ai_range)
 		COOLDOWN_START(src, forced_retarget_cooldown, forced_retarget_time)
 		if(QDELETED(src))
 			return TRUE
@@ -164,7 +162,7 @@
 	if(!path)
 		no_path_found = TRUE
 
-/mob/living/carbon/xenomorph/proc/move_to_next_turf(turf/T, max_range = ai_range)
+/mob/living/carbon/xenomorph/proc/move_to_next_turf(turf/T, max_range = GLOB.xeno_ai_range)
 	if(!T)
 		return FALSE
 
@@ -261,7 +259,7 @@
 
 		var/distance = get_dist(src, potential_target)
 
-		if(distance > ai_range)
+		if(distance > GLOB.xeno_ai_range)
 			continue
 
 		viable_targets += potential_target
@@ -278,7 +276,7 @@
 
 		var/distance = get_dist(src, potential_vehicle_target)
 
-		if(distance > ai_range)
+		if(distance > GLOB.xeno_ai_range)
 			continue
 
 		if(potential_vehicle_target.health <= 0)
@@ -314,7 +312,7 @@
 
 		var/distance = get_dist(src, potential_defense_target)
 
-		if(distance > ai_range)
+		if(distance > GLOB.xeno_ai_range)
 			continue
 
 		viable_targets += potential_defense_target

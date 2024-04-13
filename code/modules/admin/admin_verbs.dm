@@ -334,6 +334,7 @@ var/list/roundstart_mod_verbs = list(
 		add_verb(src, /client/proc/game_master_rename_platoon)
 		add_verb(src, /client/proc/toggle_vehicle_blockers)
 		add_verb(src, /client/proc/toggle_rappel_menu)
+		add_verb(src, /client/proc/change_ai_range)
 	if(CLIENT_HAS_RIGHTS(src, R_SERVER))
 		add_verb(src, admin_verbs_server)
 	if(CLIENT_HAS_RIGHTS(src, R_DEBUG))
@@ -368,6 +369,7 @@ var/list/roundstart_mod_verbs = list(
 		/client/proc/game_master_rename_platoon,
 		/client/proc/toggle_vehicle_blockers,
 		/client/proc/toggle_rappel_menu,
+		/client/proc/change_ai_range,
 		admin_verbs_admin,
 		admin_verbs_ban,
 		admin_verbs_minor_event,
