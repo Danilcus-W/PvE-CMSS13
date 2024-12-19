@@ -1,7 +1,5 @@
 /datum/human_ai_squad
-	/// Name of the squad, only visible to GMs
-	var/name
-	/// Numeric ID of the squad
+	/// Name and identificator of the squad
 	var/id
 	/// The AI humans in the squad
 	var/list/ai_in_squad = list()
@@ -10,9 +8,9 @@
 	/// Ref to the squad leader brain
 	var/datum/human_ai_brain/squad_leader
 
-/datum/human_ai_squad/New()
+/datum/human_ai_squad/New(new_id)
 	. = ..()
-	id = SShuman_ai.highest_squad_id
+	id = new_id
 
 /datum/human_ai_squad/Destroy(force, ...)
 	for(var/datum/human_ai_brain/brain as anything in ai_in_squad)

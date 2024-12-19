@@ -229,7 +229,7 @@
 /////////////////////////////
 //          FIRE           //
 /////////////////////////////
-/obj/flamer_fire/human_ai_obstacle(mob/living/carbon/human/ai_human, datum/human_ai_brain/braineno, direction, turf/target)
+/obj/flamer_fire/human_ai_obstacle(mob/living/carbon/human/ai_human, datum/human_ai_brain/brain, direction, turf/target)
 	. = ..()
 	if(!.)
 		return
@@ -242,7 +242,7 @@
 /////////////////////////////
 //          WALLS          //
 /////////////////////////////
-/turf/closed/wall/resin/human_ai_obstacle(mob/living/carbon/human/ai_human, datum/human_ai_brain/braineno, direction, turf/target)
+/turf/closed/wall/resin/human_ai_obstacle(mob/living/carbon/human/ai_human, datum/human_ai_brain/brain, direction, turf/target)
 	. = ..()
 	if(!.)
 		return

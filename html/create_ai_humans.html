@@ -1,0 +1,68 @@
+<html>
+
+<head>
+	<title>Create AI Humans</title>
+	<link rel="stylesheet" type="text/css" href="common.css">
+</head>
+
+<body>
+	<form name="spawner" action="byond://?src=/* ref src */" method="get">
+		<input type="hidden" name="src" value="/* ref src */">
+		<input type="hidden" name="admin_token" value="/* href token */">
+		Amount of humans: <input type="text" name="object_count" value="1" style="width:30px">
+		<br>
+		Range to spawn in: <input type="text" name="object_range" value="0" style="width:30px">
+		<br>
+		Assign squad: <input type="text" name="squad_name" value="" style="width:120px">
+		<br><br>
+		Spawn in: <br>
+		<input type="radio" class="radioButton" name="spawn_in" value="none" checked="checked"> None<br>
+		<input type="radio" class="radioButton" name="spawn_in" value="squad"> Squad<br>
+		<input type="radio" class="radioButton" name="spawn_in" value="squad_leader"> Squad (Leader)
+		<br><br>
+
+
+		Search for equipment and skills: <br>
+		<input type="text" name="filter" value="" onkeypress="submitFirst(event)" style="width:280px"> <input
+			type="button" class="button" value="Search" onclick="populateList()" />
+		<br>
+		<select name="create_ai_humans_list" size="18" multiple style="width:98%"></select><br>
+		<input type="submit" class="button" value="Spawn">
+	</form>
+
+	<script language="JavaScript">
+		var old_search = "";
+		var create_ai_humans_list = document.spawner.create_ai_humans_list;
+		var object_paths = null /* object types */;
+		var objects = object_paths == null ? new Array() : object_paths.split(";");
+
+		document.spawner.filter.focus();
+		populateList();
+
+		function populateList() {
+			var re = new RegExp(document.spawner.filter.value, "i")
+			create_ai_humans_list.options.length = 0;
+
+			var i;
+			for (i in objects) {
+				if (!re.test(objects[i])) continue;
+				var new_option = document.createElement("option");
+				new_option.value = objects[i];
+				new_option.text = objects[i];
+				create_ai_humans_list.options.add(new_option);
+			}
+		}
+
+		function submitFirst(event) {
+			if (!create_ai_humans_list.options.length) {
+				return false;
+			}
+
+			if (event.keyCode == 13 || event.which == 13) {
+				create_ai_humans_list.options[0].selected = 'true';
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -15,7 +15,7 @@ SUBSYSTEM_DEF(human_ai)
 	var/list/squad_id_dict = list()
 
 	/// The current highest ID of any squad
-	var/highest_squad_id = 0
+	var/highest_squad_id = 1
 
 	/// List of all existing orders
 	var/list/datum/ai_order/existing_orders = list()
@@ -62,11 +62,13 @@ SUBSYSTEM_DEF(human_ai)
 		if(MC_TICK_CHECK)
 			return
 
-/datum/controller/subsystem/human_ai/proc/create_new_squad()
-	highest_squad_id++
-	var/datum/human_ai_squad/new_squad = new
+/datum/controller/subsystem/human_ai/proc/create_new_squad(new_id)
+	if(!new_id)
+		new_id = "[highest_squad_id]"
+		highest_squad_id++
+	var/datum/human_ai_squad/new_squad = new(new_id)
 	squads += new_squad
-	squad_id_dict["[highest_squad_id]"] = new_squad
+	squad_id_dict["[new_squad.id]"] = new_squad
 	return new_squad
 
 /datum/controller/subsystem/human_ai/proc/get_squad(squad_id)

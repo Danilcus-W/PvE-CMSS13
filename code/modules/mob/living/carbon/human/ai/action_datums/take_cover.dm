@@ -9,7 +9,8 @@
 	if(brain.hold_position)
 		return 0
 
-	if(brain.in_cover && !(get_dist(brain.tied_human, brain.current_target) > brain?.gun_data?.minimum_range))
+	var/cover_distance_check = (get_dist(brain.tied_human, brain.current_target) <= brain?.gun_data?.minimum_range)
+	if(brain.in_cover && (!brain.current_target || !brain.gun_data || cover_distance_check))
 		return 0
 
 	return 15

@@ -48,7 +48,6 @@
 			name_list += brain.tied_human?.real_name
 		data["squads"] += list(list(
 			"id" = squad.id,
-			"name" = squad.name,
 			"members" = english_list(name_list),
 			"order" = squad.current_order?.name,
 			"ref" = REF(squad),
@@ -100,7 +99,7 @@
 				return
 
 			var/datum/human_ai_squad/squad = SShuman_ai.get_squad("[params["squad"]]")
-			squad.name = tgui_input_text(ui.user, "Input new squad name", "Input")
+			squad.id = tgui_input_text(ui.user, "Input new squad name", "Input")
 			return TRUE
 
 		if("assign_to_squad")
@@ -152,62 +151,3 @@
 
 	human_ai_menu = new /datum/human_ai_management_menu(src)
 	human_ai_menu.tgui_interact(mob)
-
-/client/proc/create_human_ai()
-	set name = "Create Human AI - Expanded"
-	set category = "Game Master.HumanAI"
-
-	if(!check_rights(R_DEBUG))
-		return
-
-	if(!SSticker.mode)
-		to_chat(src, SPAN_WARNING("The round hasn't started yet!"))
-		return
-
-	var/mob/living/carbon/human/ai_human = new()
-	ai_human.AddComponent(/datum/component/human_ai)
-
-	if(!cmd_admin_dress_human(ai_human, randomize = TRUE))
-		qdel(ai_human)
-		return
-
-	ai_human.face_dir(mob.dir)
-	ai_human.forceMove(get_turf(mob))
-	ai_human.get_ai_brain().appraise_inventory(armor = TRUE)
-
-/client/proc/make_human_ai(mob/living/carbon/human/mob in GLOB.human_mob_list)
-	set name = "Make AI"
-	set desc = "Add AI functionality to a human."
-	set category = null
-
-	if(!check_rights(R_DEBUG|R_ADMIN))
-		return
-
-	if(QDELETED(mob))
-		return
-
-	if(mob.GetComponent(/datum/component/human_ai))
-		to_chat(usr, SPAN_WARNING("[mob] already has an assigned AI."))
-		return
-
-	if(mob.ckey && tgui_alert(mob, "This mob is being controlled by [mob.ckey]. Are you sure you wish to add AI to it?","Make AI", list("Yes","No")) != "Yes")
-		return
-
-	mob.AddComponent(/datum/component/human_ai)
-	mob.get_ai_brain().appraise_inventory()
-
-	message_admins("[key_name_admin(usr)] assigned an AI component to [mob.real_name].")
-
-/client/proc/toggle_human_ai_tweaks()
-	set name = "Toggle Human AI Tweaks"
-	set category = "Game Master.Flags"
-
-	if(!admin_holder || !check_rights(R_MOD, FALSE))
-		return
-
-	if(!SSticker.mode)
-		to_chat(usr, SPAN_WARNING("A mode hasn't been selected yet!"))
-		return
-
-	SSticker.mode.toggleable_flags ^= MODE_HUMAN_AI_TWEAKS
-	message_admins("[src] has [MODE_HAS_TOGGLEABLE_FLAG(MODE_HUMAN_AI_TWEAKS) ? "toggled Human AI tweaks on" : "toggled Human AI tweaks off"].")

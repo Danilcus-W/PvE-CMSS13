@@ -85,7 +85,7 @@
 	return (locate(object_path) in equipment_map[object_type])
 
 /datum/human_ai_brain/proc/store_item(obj/item/object_ref, object_loc, slot_type)
-	if(object_ref.loc != tied_human)
+	if(!(object_ref in tied_human.contents_twice()))
 		return
 
 	if(object_ref in equipped_items_original_loc)
@@ -173,6 +173,8 @@
 		previous_faction = tied_human.faction
 		var/datum/human_ai_faction/our_faction = SShuman_ai.human_ai_factions[tied_human.faction]
 		our_faction?.apply_faction_data(src)
+
+	recalculate_containers()
 
 	/*if(tied_human.shoes && !primary_melee) // snowflake bootknife check
 		var/obj/item/weapon/knife = locate() in tied_human.shoes

@@ -594,8 +594,6 @@
 		COOLDOWN_START(ai_brain, pill_use_cooldown, 5 SECONDS)
 		sleep(ai_brain.medium_action_delay * ai_brain.action_delay_mult)
 
-	ai_brain.appraise_inventory() // For some reason it removes pill bottles from equipment_map after usage
-
 /obj/item/storage/pill_bottle/proc/choose_color(mob/user)
 	if(!user)
 		user = usr
