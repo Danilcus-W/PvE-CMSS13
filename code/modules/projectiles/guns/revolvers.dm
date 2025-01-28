@@ -31,6 +31,9 @@
 	if(current_mag)
 		replace_cylinder(current_mag.current_rounds)
 
+/obj/item/weapon/gun/revolver/get_mouse_pointer()
+	return 'icons/effects/mouse_pointer/pistol_mouse.dmi'
+
 /obj/item/weapon/gun/revolver/set_gun_config_values()
 	..()
 	set_fire_delay(FIRE_DELAY_TIER_5)
@@ -452,8 +455,7 @@
 	icon_state = "zhnk72"
 	item_state = "zhnk72"
 
-	fire_sound = "gun_pkd" //sounds stolen from bladerunner revolvers bc they arent used and sound awesome
-	fire_rattle = 'sound/weapons/gun_pkd_fire01_rattle.ogg'
+	fire_sound = 'sound/weapons/gun_kt42.ogg'
 	reload_sound = 'sound/weapons/handling/pkd_speed_load.ogg'
 	cocked_sound = 'sound/weapons/handling/pkd_cock.wav'
 	unload_sound = 'sound/weapons/handling/pkd_open_chamber.ogg'
