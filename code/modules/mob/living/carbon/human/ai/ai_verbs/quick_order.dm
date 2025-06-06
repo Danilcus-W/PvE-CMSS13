@@ -99,7 +99,7 @@
 	to_chat(holder, SPAN_BOLDNOTICE("Order sent."))
 
 /client/proc/quick_order_ai_approach()
-	set name = "Quick Order: Approach"
+	set name = "Order AI: Approach"
 	set category = "Game Master.HumanAI"
 
 	if(!check_rights(R_DEBUG))
@@ -131,7 +131,7 @@
 		to_chat(holder, SPAN_BOLDNOTICE("Selected AI now no longer holding position."))
 
 /client/proc/quick_order_ai_hold_position()
-	set name = "Quick Order: Hold Position"
+	set name = "Order AI: Hold Position"
 	set category = "Game Master.HumanAI"
 
 	if(!check_rights(R_DEBUG))

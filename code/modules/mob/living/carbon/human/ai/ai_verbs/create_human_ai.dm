@@ -15,8 +15,17 @@
 	set name = "Create Human AI"
 	set category = "Game Master.HumanAI"
 
-	if(admin_holder)
-		admin_holder.create_ai_humans(usr)
+	if(!check_rights(R_DEBUG))
+		return
+
+	if(!SSticker.mode)
+		to_chat(src, SPAN_WARNING("The round hasn't started yet!"))
+		return
+
+	if(!admin_holder)
+		return
+
+	admin_holder.create_ai_humans(usr)
 
 /// Topic stuff ///
 

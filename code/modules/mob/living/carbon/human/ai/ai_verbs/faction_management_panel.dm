@@ -131,7 +131,7 @@
 			faction_obj.add_friendly_faction(gotten_input)
 
 /client/proc/open_human_faction_management_panel()
-	set name = "Human Faction Management Panel"
+	set name = "Manage AI Factions"
 	set category = "Game Master.HumanAI"
 
 	if(!check_rights(R_DEBUG))

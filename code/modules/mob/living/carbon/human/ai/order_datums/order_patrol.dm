@@ -43,7 +43,7 @@
 	waiting = FALSE
 
 /datum/admins/proc/create_human_ai_patrol()
-	set name = "Create Human AI Patrol Waypoints"
+	set name = "Create AI Patrol Waypoints"
 	set category = "Game Master.HumanAI"
 
 	if(!check_rights(R_DEBUG))

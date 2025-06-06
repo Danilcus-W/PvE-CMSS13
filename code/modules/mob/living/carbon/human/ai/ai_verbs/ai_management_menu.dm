@@ -139,7 +139,7 @@
 			return TRUE
 
 /client/proc/open_human_ai_management_panel()
-	set name = "Human AI Management Panel"
+	set name = "Manage Human AI"
 	set category = "Game Master.HumanAI"
 
 	if(!check_rights(R_DEBUG))
