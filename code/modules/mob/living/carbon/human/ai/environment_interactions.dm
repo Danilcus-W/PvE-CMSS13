@@ -14,7 +14,6 @@
 	ai_human.face_atom(src)
 	return TRUE
 
-
 /////////////////////////////
 //         OBJECTS         //
 /////////////////////////////
@@ -25,6 +24,9 @@
 
 	if(!density)
 		return 0
+
+	if(!breakable)
+		return INFINITY
 
 	return OBJECT_PENALTY
 
@@ -55,7 +57,6 @@
 
 	return ..()
 
-
 /////////////////////////////
 //        PLATFORMS        //
 /////////////////////////////
@@ -65,7 +66,6 @@
 		return
 
 	return DOOR_PENALTY
-
 
 /////////////////////////////
 //         PODDDOORS       //
@@ -126,10 +126,8 @@
 //         HUMANS         //
 /////////////////////////////
 /mob/living/carbon/human/human_ai_obstacle(mob/living/carbon/human/ai_human, datum/human_ai_brain/brain, direction, turf/target)
-	. = ..()
-	if(!.)
-		return
-
+	/// We do not return our parent because its kinda makes AI
+	/// push eachother when following someone as a group
 	return HUMAN_PENALTY
 
 /mob/living/carbon/human/human_ai_act(mob/living/carbon/human/ai_human, datum/human_ai_brain/brain)
@@ -174,7 +172,6 @@
 
 	return VEHICLE_PENALTY
 
-
 /////////////////////////////
 //         SENTRY          //
 /////////////////////////////
@@ -218,7 +215,6 @@
 
 	return DOOR_PENALTY
 
-
 /////////////////////////////
 //          FIRE           //
 /////////////////////////////
@@ -241,7 +237,6 @@
 		return
 
 	return WALL_PENALTY
-
 
 /////////////////////////////
 //          FLOOR          //
@@ -266,7 +261,6 @@
 		return
 
 	return INFINITY
-
 
 /////////////////////////////
 //          RIVER          //

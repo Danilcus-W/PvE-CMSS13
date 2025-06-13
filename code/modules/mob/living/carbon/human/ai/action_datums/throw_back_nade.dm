@@ -7,7 +7,7 @@
 	action_flags = ACTION_USING_HANDS | ACTION_USING_LEGS
 
 /datum/ai_action/throw_back_nade/get_weight(datum/human_ai_brain/brain)
-	if(QDELETED(brain.active_grenade_found))
+	if(!brain.active_grenade_found)
 		return 0
 
 	if(get_dist(brain.tied_human, brain.active_grenade_found) > 4)

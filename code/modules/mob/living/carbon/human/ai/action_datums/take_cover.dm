@@ -22,18 +22,24 @@
 	if(!brain.current_cover)
 		return ONGOING_ACTION_COMPLETED
 
+	var/mob/tied_human = brain.tied_human
+
 #if defined(TESTING) || defined(HUMAN_AI_TESTING)
 	current_cover.color = "#b80505"
-	current_cover.maptext = "[brain.tied_human.real_name] | [get_dist(current_cover, brain.tied_human)]"
+	current_cover.maptext = "[tied_human.real_name] | [get_dist(current_cover, tied_human)]"
 #endif
 
-	if(get_dist(current_cover, brain.tied_human) > 0)
+	if(get_dist(current_cover, tied_human) > 0)
 		if(!brain.move_to_next_turf(current_cover))
 			brain.end_cover()
 			return ONGOING_ACTION_COMPLETED
 
-		if(get_dist(current_cover, brain.tied_human) > 0)
+		if(get_dist(current_cover, tied_human) > 0)
 			return ONGOING_ACTION_UNFINISHED
 
 	brain.in_cover = TRUE
+
+	if(brain.target_turf)
+		tied_human.face_atom(brain.target_turf)
+
 	return ONGOING_ACTION_COMPLETED

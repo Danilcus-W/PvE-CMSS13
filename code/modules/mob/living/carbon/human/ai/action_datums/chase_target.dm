@@ -39,10 +39,6 @@
 		if(get_dist(target_turf, tied_human) > 0)
 			return ONGOING_ACTION_COMPLETED
 
-	// Turn around as we're seeking for the lost target
-	var/direction = turn(tied_human.dir, pick(90,-90))
-	tied_human.face_dir(direction)
-
 	// Scouted, found nothing, discard
 	brain.target_turf = null
 	return ONGOING_ACTION_COMPLETED

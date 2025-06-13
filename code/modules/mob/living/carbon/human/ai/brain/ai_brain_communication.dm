@@ -137,33 +137,39 @@
 
 /datum/human_ai_brain/proc/say_in_combat_line(chance = in_combat_line_chance)
 	if(!length(enter_combat_lines) || !prob(chance) || (tied_human.health < HEALTH_THRESHOLD_CRIT))
-		return
+		return FALSE
 	tied_human.say(pick(enter_combat_lines))
+	return TRUE
 
 /datum/human_ai_brain/proc/say_exit_combat_line(chance = exit_combat_line_chance)
 	if(!length(exit_combat_lines) || !prob(chance) || (tied_human.health < HEALTH_THRESHOLD_CRIT))
-		return
+		return FALSE
 	tied_human.say(pick(exit_combat_lines))
+	return TRUE
 
-/datum/human_ai_brain/proc/on_squad_member_death(mob/living/carbon/human/dead_member)
+/datum/human_ai_brain/proc/say_squaddie_death_line(mob/living/carbon/human/dead_member)
 	if(!length(squad_member_death_lines) || !prob(squad_member_death_line_chance) || (tied_human.health < HEALTH_THRESHOLD_CRIT))
-		return
+		return FALSE
 	tied_human.say(pick(squad_member_death_lines))
+	return TRUE
 
 /datum/human_ai_brain/proc/say_grenade_thrown_line(chance = grenade_thrown_line_chance)
 	if(!length(grenade_thrown_lines) || !prob(chance) || (tied_human.health < HEALTH_THRESHOLD_CRIT))
-		return
+		return FALSE
 	tied_human.say(pick(grenade_thrown_lines))
+	return TRUE
 
 /datum/human_ai_brain/proc/say_reload_line(chance = reload_line_chance)
 	if(!length(reload_lines) || !prob(chance) || (tied_human.health < HEALTH_THRESHOLD_CRIT) || !primary_weapon)
-		return
+		return FALSE
 	if(istype(primary_weapon.current_mag, /obj/item/ammo_magazine/internal))
 		tied_human.say(pick(reload_internal_mag_lines))
 	else
 		tied_human.say(pick(reload_lines))
+	return TRUE
 
 /datum/human_ai_brain/proc/say_need_healing_line(chance = need_healing_line_chance)
 	if(!length(need_healing_lines) || !prob(chance) || (tied_human.health < HEALTH_THRESHOLD_CRIT))
-		return
+		return FALSE
 	tied_human.say(pick(need_healing_lines))
+	return TRUE

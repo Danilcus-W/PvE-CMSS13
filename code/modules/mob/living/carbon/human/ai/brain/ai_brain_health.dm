@@ -80,58 +80,6 @@
 	/// How many stacks are required to stop this AI from recieving treatment
 	var/treatment_stack_threshold = 10
 
-/datum/human_ai_brain/proc/set_injured_ally(mob/living/new_target)
-	if(!new_target)
-		return
-
-	RegisterSignal(new_target, COMSIG_PARENT_QDELETING, PROC_REF(lose_injured_ally), TRUE)
-	RegisterSignal(new_target, COMSIG_MOB_DEATH, PROC_REF(lose_injured_ally), TRUE)
-	found_injured_ally = new_target
-
-/datum/human_ai_brain/proc/lose_injured_ally()
-	if(found_injured_ally)
-		UnregisterSignal(found_injured_ally, COMSIG_PARENT_QDELETING)
-		UnregisterSignal(found_injured_ally, COMSIG_MOB_DEATH)
-	found_injured_ally = null
-
-/datum/human_ai_brain/proc/get_injured_ally()
-	var/list/viable_targets = list()
-	var/atom/movable/closest_target
-	var/smallest_distance = INFINITY
-
-	for(var/mob/living/carbon/human/possible_buddy as anything in GLOB.alive_human_list)
-		if(possible_buddy == tied_human)
-			continue
-
-		if(tied_human.z != possible_buddy.z)
-			continue
-
-		if(!faction_check(possible_buddy))
-			continue
-
-		if(!(tied_human in viewers(view_distance, possible_buddy)))
-			continue
-
-		var/distance = get_dist(tied_human, possible_buddy)
-		if(distance > view_distance)
-			continue
-
-		if(!healing_start_check(possible_buddy))
-			continue
-
-		viable_targets += possible_buddy
-
-		if(smallest_distance <= distance)
-			continue
-
-		closest_target = possible_buddy
-		smallest_distance = distance
-
-	if(length(viable_targets) > 1)
-		return pick(viable_targets)
-
-	return closest_target
-
 /datum/human_ai_brain/proc/healing_start_check(mob/living/carbon/human/target)
 	return ((target.health / target.maxHealth) <= healing_start_threshold) || target.is_bleeding() || target.has_broken_limbs()
 
@@ -399,3 +347,57 @@
 #if defined(TESTING) || defined(HUMAN_AI_TESTING)
 	to_chat(world, "[tied_human.name] healed oxygen damage of [target.name] using [oxy_heal].")
 #endif
+
+/// Unused procs ahead
+
+/datum/human_ai_brain/proc/set_injured_ally(mob/living/new_target)
+	if(!new_target)
+		return
+
+	RegisterSignal(new_target, COMSIG_PARENT_QDELETING, PROC_REF(lose_injured_ally), TRUE)
+	RegisterSignal(new_target, COMSIG_MOB_DEATH, PROC_REF(lose_injured_ally), TRUE)
+	found_injured_ally = new_target
+
+/datum/human_ai_brain/proc/lose_injured_ally()
+	if(found_injured_ally)
+		UnregisterSignal(found_injured_ally, COMSIG_PARENT_QDELETING)
+		UnregisterSignal(found_injured_ally, COMSIG_MOB_DEATH)
+	found_injured_ally = null
+
+/datum/human_ai_brain/proc/get_injured_ally()
+	var/list/viable_targets = list()
+	var/atom/movable/closest_target
+	var/smallest_distance = INFINITY
+
+	for(var/mob/living/carbon/human/possible_buddy as anything in GLOB.alive_human_list)
+		if(possible_buddy == tied_human)
+			continue
+
+		if(tied_human.z != possible_buddy.z)
+			continue
+
+		if(!faction_check(possible_buddy))
+			continue
+
+		if(!(tied_human in viewers(view_distance, possible_buddy)))
+			continue
+
+		var/distance = get_dist(tied_human, possible_buddy)
+		if(distance > view_distance)
+			continue
+
+		if(!healing_start_check(possible_buddy))
+			continue
+
+		viable_targets += possible_buddy
+
+		if(smallest_distance <= distance)
+			continue
+
+		closest_target = possible_buddy
+		smallest_distance = distance
+
+	if(length(viable_targets) > 1)
+		return pick(viable_targets)
+
+	return closest_target

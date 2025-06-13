@@ -39,6 +39,10 @@ GLOBAL_LIST_INIT_TYPED(firearm_appraisals, /datum/firearm_appraisal, build_firea
 		firearm.flags_gun_features ^= GUN_TRIGGER_SAFETY
 		firearm.gun_safety_handle(user)
 
+/// List of things we do after each burst based off weapon type. Should return next fire cooldown, if needs any
+/datum/firearm_appraisal/proc/after_fire(obj/item/weapon/gun/firearm, mob/living/carbon/user, datum/human_ai_brain/AI)
+	return FALSE
+
 /// Reload sequence per weapon type, override as needed
 /datum/firearm_appraisal/proc/do_reload(obj/item/weapon/gun/firearm, obj/item/ammo_magazine/mag, mob/living/carbon/user, datum/human_ai_brain/AI)
 	AI.unholster_primary()
@@ -65,7 +69,10 @@ GLOBAL_LIST_INIT_TYPED(firearm_appraisals, /datum/firearm_appraisal, build_firea
 		firearm?.attackby(mag, user)
 	sleep(AI.short_action_delay * AI.action_delay_mult)
 	user.swap_hand()
-	AI.wield_primary_sleep()
+	if(AI.in_combat)
+		AI.wield_primary_sleep()
+	else
+		AI.holster_primary()
 
 /datum/firearm_appraisal/sniper
 	optimal_range = 7
@@ -168,6 +175,11 @@ GLOBAL_LIST_INIT_TYPED(firearm_appraisals, /datum/firearm_appraisal, build_firea
 		return
 	firearm.unique_action(user)
 
+/datum/firearm_appraisal/shotgun/after_fire(obj/item/weapon/gun/shotgun/pump/firearm, mob/living/carbon/user, datum/human_ai_brain/AI)
+	addtimer(CALLBACK(firearm, TYPE_PROC_REF(/obj/item/weapon/gun/shotgun/pump, pump_shotgun), user), firearm.pump_delay)
+	COOLDOWN_START(AI, stop_fire_cooldown, max(firearm.pump_delay, firearm.get_fire_delay()) + 1)
+	return (max(firearm.pump_delay, firearm.get_fire_delay()) + 1)
+
 /datum/firearm_appraisal/boltaction
 	optimal_range = 7
 	maximum_range = 30
@@ -185,6 +197,12 @@ GLOBAL_LIST_INIT_TYPED(firearm_appraisals, /datum/firearm_appraisal, build_firea
 	firearm.recent_cycle = world.time - firearm.bolt_delay
 	firearm.unique_action(user)
 	firearm.recent_cycle = world.time - firearm.bolt_delay
+
+/datum/firearm_appraisal/boltaction/after_fire(obj/item/weapon/gun/boltaction/firearm, mob/living/carbon/user, datum/human_ai_brain/AI)
+	addtimer(CALLBACK(firearm, TYPE_PROC_REF(/obj/item/weapon/gun/boltaction, unique_action), user), 1)
+	addtimer(CALLBACK(firearm, TYPE_PROC_REF(/obj/item/weapon/gun/boltaction, unique_action), user), firearm.bolt_delay + 1)
+	COOLDOWN_START(AI, stop_fire_cooldown, max(firearm.bolt_delay * 2, firearm.get_fire_delay()) + 1)
+	return (max(firearm.bolt_delay * 2, firearm.get_fire_delay()) + 1)
 
 /datum/firearm_appraisal/flamer
 	burst_amount_max = 1

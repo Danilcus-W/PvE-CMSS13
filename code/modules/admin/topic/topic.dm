@@ -2076,6 +2076,14 @@
 
 		topic_vehicles(href_list["vehicle"])
 
+	// HAI thingy
+
+	else if(href_list["create_ai_humans_list"])
+		if(!check_rights(R_SPAWN))
+			return
+
+		create_ai_humans_list(href_list)
+
 	// player info stuff
 
 	if(href_list["add_player_info"])

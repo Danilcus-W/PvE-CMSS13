@@ -127,7 +127,6 @@
 
 	return length(final_targets) ? pick(final_targets) : closest_target
 
-
 /datum/human_ai_brain/proc/can_target(mob/living/carbon/target)
 	if(!istype(target))
 		return FALSE
@@ -164,5 +163,40 @@
 			if(faction_check(possible_friendly))
 				return FALSE
 	return TRUE
+
+/datum/human_ai_brain/proc/queue_set_target(mob/living/new_target)
+	if(!new_target)
+		return
+
+	if(in_combat)
+		set_target(new_target)
+		return
+
+	addtimer(CALLBACK(src, PROC_REF(set_target), new_target), rand(min_reaction_time, max_reaction_time))
+
+/datum/human_ai_brain/proc/set_target(mob/living/new_target)
+	if(QDELETED(new_target))
+		return
+
+	RegisterSignal(new_target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_delete), TRUE)
+	RegisterSignal(new_target, COMSIG_MOB_DEATH, PROC_REF(on_target_death), TRUE)
+	RegisterSignal(new_target, COMSIG_MOVABLE_MOVED, PROC_REF(on_target_move), TRUE)
+	current_target = new_target
+	target_turf = get_turf(current_target)
+
+/datum/human_ai_brain/proc/lose_target()
+	if(current_target)
+		UnregisterSignal(current_target, COMSIG_PARENT_QDELETING)
+		UnregisterSignal(current_target, COMSIG_MOB_DEATH)
+		UnregisterSignal(current_target, COMSIG_MOVABLE_MOVED)
+	current_target = null
+
+/datum/human_ai_brain/proc/update_target()
+	if(current_target)
+		if(tied_human in viewers(view_distance, current_target))
+			target_turf = get_turf(current_target)
+		else
+			COOLDOWN_START(src, fire_offscreen, 2 SECONDS)
+			lose_target()
 
 #undef EXTRA_CHECK_DISTANCE_MULTIPLIER

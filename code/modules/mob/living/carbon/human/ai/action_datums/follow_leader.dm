@@ -24,7 +24,7 @@
 	if(!squad_leader)
 		return 0
 
-	if(get_dist(brain.tied_human, squad_leader) <= (1 + length(squad.ai_in_squad) / 2))
+	if(get_dist(brain.tied_human, squad_leader) <= (1 + length(squad.ai_in_squad) / 3))
 		return 0
 
 	return 5
@@ -34,7 +34,7 @@
 		return
 
 	var/datum/human_ai_squad/squad = SShuman_ai.squad_id_dict["[brain.squad_id]"]
-	follow_distance = 1 + length(squad.ai_in_squad) / 2
+	follow_distance = 1 + length(squad.ai_in_squad) / 3
 
 /datum/ai_action/follow_leader/trigger_action()
 	. = ..()

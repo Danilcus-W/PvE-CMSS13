@@ -48,7 +48,7 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 	var/cover_without_gun = FALSE
 
 	/// The chance that the AI will leave cover when exiting combat
-	var/peek_cover_chance = 60
+	var/chase_after_combat_prob = 60
 
 	/// Factions that the AI won't engage in hostilities with. Controlled by the AI's faction
 	var/list/friendly_factions = list()
@@ -67,6 +67,11 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 	/// If TRUE, the AI will not move at all
 	var/hold_position = FALSE
 
+	/// Maximum AI reaction delay for things that should give players a turn
+	var/max_reaction_time = 3 SECONDS
+	/// Minimum AI reaction delay for things that should give players a turn
+	var/min_reaction_time = 0.7 SECONDS
+
 /datum/human_ai_brain/New(mob/living/carbon/human/tied_human)
 	. = ..()
 	src.tied_human = tied_human
@@ -78,6 +83,8 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 	RegisterSignal(tied_human, COMSIG_MOB_DEATH, PROC_REF(reset_ai))
 	RegisterSignal(tied_human, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
 	RegisterSignal(tied_human, COMSIG_HUMAN_BULLET_ACT, PROC_REF(on_shot))
+	RegisterSignal(tied_human, COMSIG_PARENT_ATTACKBY, PROC_REF(on_hit))
+	RegisterSignal(tied_human, COMSIG_HUMAN_XENO_ATTACK, PROC_REF(on_slashed))
 	RegisterSignal(tied_human, COMSIG_HUMAN_HANDCUFFED, PROC_REF(on_handcuffed))
 	RegisterSignal(tied_human, COMSIG_HUMAN_GET_AI_BRAIN, PROC_REF(get_ai_brain))
 	RegisterSignal(tied_human, COMSIG_HUMAN_SET_SPECIES, PROC_REF(on_species_change))
@@ -103,6 +110,7 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 	drawn_melee_weapon = null
 	primary_weapon = null
 	gun_data = null
+	active_grenade_found = null
 	lose_target()
 
 	for(var/action in ongoing_actions)
@@ -127,7 +135,7 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 		tied_human.set_buckled(FALSE) // AI never buckle themselves into chairs at the moment, change if this becomes the case
 
 	if(!current_target)
-		set_target(get_target())
+		queue_set_target(get_target())
 
 	if(current_target)
 		enter_combat()
@@ -177,117 +185,12 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 			if(ONGOING_ACTION_COMPLETED)
 				qdel(action)
 
-/datum/human_ai_brain/proc/set_target(mob/living/new_target)
-	if(!new_target)
-		return
 
-	RegisterSignal(new_target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_delete), TRUE)
-	RegisterSignal(new_target, COMSIG_MOB_DEATH, PROC_REF(on_target_death), TRUE)
-	RegisterSignal(new_target, COMSIG_MOVABLE_MOVED, PROC_REF(on_target_move), TRUE)
-	current_target = new_target
-	target_turf = get_turf(current_target)
-
-/datum/human_ai_brain/proc/lose_target()
-	if(current_target)
-		UnregisterSignal(current_target, COMSIG_PARENT_QDELETING)
-		UnregisterSignal(current_target, COMSIG_MOB_DEATH)
-		UnregisterSignal(current_target, COMSIG_MOVABLE_MOVED)
-	current_target = null
-
-/datum/human_ai_brain/proc/update_target_pos()
-	if(current_target)
-		if(tied_human in viewers(view_distance, current_target))
-			target_turf = get_turf(current_target)
-		else
-			COOLDOWN_START(src, fire_offscreen, 2 SECONDS)
-			lose_target()
-
-/datum/human_ai_brain/proc/on_target_delete(datum/source, force)
-	SIGNAL_HANDLER
-	lose_target()
-	target_turf = null
-
-/datum/human_ai_brain/proc/on_target_death(datum/source)
-	SIGNAL_HANDLER
-	lose_target()
-	target_turf = null
-
-/datum/human_ai_brain/proc/on_target_move(atom/oldloc, dir, forced)
-	SIGNAL_HANDLER
-	update_target_pos()
-
-/datum/human_ai_brain/proc/on_human_delete(datum/source, force)
-	SIGNAL_HANDLER
-	tied_human = null
-
-/datum/human_ai_brain/proc/on_species_change(datum/source, new_species)
-	SIGNAL_HANDLER
-	if((new_species == SPECIES_YAUTJA) || (new_species == SPECIES_ZOMBIE))
-		ignore_looting = TRUE
-	else
-		ignore_looting = FALSE
-
-/datum/human_ai_brain/proc/setup_detection_radius()
-	if(length(detection_turfs))
-		clear_detection_radius()
-
-	for(var/turf/open/floor in range(1, tied_human))
-		RegisterSignal(floor, COMSIG_TURF_ENTERED, PROC_REF(on_detection_turf_enter))
-		detection_turfs += floor
-
-/datum/human_ai_brain/proc/clear_detection_radius()
-	for(var/turf/open/floor as anything in detection_turfs)
-		UnregisterSignal(floor, COMSIG_TURF_ENTERED)
-
-	detection_turfs.Cut()
-
-/datum/human_ai_brain/proc/on_detection_turf_enter(datum/source, atom/movable/entering)
-	SIGNAL_HANDLER
-	if(tied_human.client)
-		return
-
-	if(entering == tied_human)
-		return
-
-	if(istype(entering, /obj/projectile))
-		var/obj/projectile/bullet = entering
-
-		enter_combat()
-
-		if(length(neutral_factions))
-			if(ismob(bullet.firer))
-				var/mob/mob_firer = bullet.firer
-				if(mob_firer.faction in neutral_factions)
-					on_neutral_faction_betray(mob_firer.faction)
-
-			else if(isdefenses(bullet.firer))
-				var/obj/structure/machinery/defenses/defense_firer = bullet.firer
-				for(var/faction in defense_firer.faction_group)
-					if(faction in neutral_factions)
-						on_neutral_faction_betray(faction)
-
-		if(faction_check(bullet.firer))
-			return
-
-		if(get_dist(tied_human, bullet.firer) <= view_distance)
-			set_target(bullet.firer)
-		else
-			COOLDOWN_START(src, fire_offscreen, 4 SECONDS)
-			target_turf = get_turf(bullet.firer)
-
-/datum/human_ai_brain/proc/on_move(atom/oldloc, direction, forced)
-	setup_detection_radius()
-
-	if(in_cover && (get_dist(tied_human, current_cover) > gun_data?.minimum_range))
-		end_cover()
-
-	update_target_pos()
-
+/// Puts AI into its "combat state", which expires after some time if HAI wasn't threatened again
 /datum/human_ai_brain/proc/enter_combat()
 	SIGNAL_HANDLER
 	if(squad_id) // call for help
-		var/datum/human_ai_squad/squad = SShuman_ai.squad_id_dict["[squad_id]"]
-		for(var/datum/human_ai_brain/squaddie as anything in squad.ai_in_squad)
+		for(var/datum/human_ai_brain/squaddie as anything in get_squad().ai_in_squad)
 			if(squaddie.target_turf)
 				continue
 			if(get_dist(squaddie.tied_human, tied_human) > squaddie.view_distance)
@@ -303,9 +206,12 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 		say_in_combat_line()
 
 	if(isxeno(current_target))
-		try_cover(Get_Angle(current_target, tied_human), current_target)
+		try_cover(current_target, Get_Angle(current_target, tied_human))
 
+	if(prob(50))
+		tied_human.face_atom(target_turf)
 	in_combat = TRUE
+
 	addtimer(CALLBACK(src, PROC_REF(exit_combat)), rand(combat_decay_time_min, combat_decay_time_max), TIMER_UNIQUE | TIMER_NO_HASH_WAIT | TIMER_OVERRIDE)
 	SShuman_ai.combat_ever_started = TRUE
 
@@ -322,43 +228,10 @@ GLOBAL_LIST_EMPTY(human_ai_brains)
 		holster_melee()
 
 	if(current_cover)
-		if(!prob(peek_cover_chance))
+		if(!prob(chase_after_combat_prob))
 			target_turf = null
 		end_cover()
 	else
 		target_turf = null
 
 	in_combat = FALSE
-
-/datum/human_ai_brain/proc/on_shot(datum/source, damage_result, ammo_flags, obj/projectile/bullet)
-	SIGNAL_HANDLER
-	if(tied_human.client)
-		return
-
-	enter_combat()
-
-	if(length(neutral_factions))
-		if(ismob(bullet.firer))
-			var/mob/mob_firer = bullet.firer
-			if(mob_firer.faction in neutral_factions)
-				on_neutral_faction_betray(mob_firer.faction)
-
-		else if(isdefenses(bullet.firer))
-			var/obj/structure/machinery/defenses/defense_firer = bullet.firer
-			for(var/faction in defense_firer.faction_group)
-				if(faction in neutral_factions)
-					on_neutral_faction_betray(faction)
-
-	if(faction_check(bullet.firer))
-		return
-
-	if(get_dist(tied_human, bullet.firer) <= view_distance)
-		set_target(bullet.firer)
-	else
-		COOLDOWN_START(src, fire_offscreen, 4 SECONDS)
-		target_turf = get_turf(bullet.firer)
-
-	if(!current_cover)
-		try_cover(bullet.angle, bullet.firer)
-	else if(in_cover)
-		on_shot_inside_cover(bullet.angle, bullet.firer)

@@ -46,7 +46,10 @@
 
 	if(brain.healing_start_check(tied_human))
 		if(!brain.start_healing(tied_human))
-			brain.cant_be_treated_stacks++
+			brain.increment_treatment_stacks()
 		return ONGOING_ACTION_UNFINISHED
+
+	if(brain.in_combat)
+		brain.unholster_primary()
 
 	return ONGOING_ACTION_COMPLETED

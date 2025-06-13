@@ -67,14 +67,15 @@
 	if(brain && (squad_leader == brain))
 		set_squad_leader(null)
 
-	for(var/datum/human_ai_brain/squaddie as anything in ai_in_squad)
+	for(var/datum/human_ai_brain/squaddie as anything in shuffle(ai_in_squad))
 		if(squaddie?.tied_human.client)
 			continue
 
 		if(squaddie.tied_human.is_mob_incapacitated())
 			continue
 
-		squaddie.on_squad_member_death(dead_mob)
+		if(squaddie.say_squaddie_death_line(dead_mob))
+			break // One shout per squad should be enough
 
 /datum/human_ai_squad/proc/on_squad_member_delete(datum/human_ai_brain/deleting)
 	SIGNAL_HANDLER

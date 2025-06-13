@@ -82,6 +82,20 @@
 	our_faction.remove_neutral_faction(faction)
 	our_faction.reapply_faction_data()
 
+/datum/human_ai_brain/proc/setup_detection_radius()
+	if(length(detection_turfs))
+		clear_detection_radius()
+
+	for(var/turf/open/floor in range(1, tied_human))
+		RegisterSignal(floor, COMSIG_TURF_ENTERED, PROC_REF(on_detection_turf_enter))
+		detection_turfs += floor
+
+/datum/human_ai_brain/proc/clear_detection_radius()
+	for(var/turf/open/floor as anything in detection_turfs)
+		UnregisterSignal(floor, COMSIG_TURF_ENTERED)
+
+	detection_turfs.Cut()
+
 /// Announces whenever an AI is handcuffed so that GMs can force someone in or take over themselves
 /datum/human_ai_brain/proc/on_handcuffed(datum/source)
 	SIGNAL_HANDLER
@@ -114,12 +128,18 @@
 
 /// Tells the AI to wield their primary weapon, can be called if they aren't holding it or if they are already wielding it
 /datum/human_ai_brain/proc/wield_primary()
-	primary_weapon?.wield(tied_human)
+	if(primary_weapon)
+		return primary_weapon.wield(tied_human)
 
 /// wield_primary() with a delay inbuilt
 /datum/human_ai_brain/proc/wield_primary_sleep()
 	wield_primary()
 	sleep(max(primary_weapon?.wield_delay, short_action_delay * action_delay_mult))
+
+/// Tells the AI to unwield their primary weapon, can be called if they aren't holding it or if they are already not wielding it
+/datum/human_ai_brain/proc/unwield_primary()
+	if(primary_weapon)
+		return primary_weapon?.unwield(tied_human)
 
 /// Holsters the AI's primary weapon if possible
 /datum/human_ai_brain/proc/holster_primary()
@@ -137,11 +157,14 @@
 	if(cur_hand)
 		tied_human.drop_held_item(cur_hand)
 
-	if(tied_human.shoes)
-		var/obj/item/melee_weapon = tied_human.shoes.remove_item(tied_human)
-		drawn_melee_weapon = melee_weapon
+	if(tied_human.shoes?.stored_item)
+		drawn_melee_weapon = tied_human.shoes.remove_item(tied_human)
+
+	if(drawn_melee_weapon)
+		ensure_primary_hand(drawn_melee_weapon)
 		RegisterSignal(drawn_melee_weapon, COMSIG_ITEM_DROPPED, PROC_REF(on_melee_dropped))
-		return melee_weapon
+
+	return drawn_melee_weapon
 
 /// Signal for if a melee weapon is dropped
 /datum/human_ai_brain/proc/on_melee_dropped()
@@ -165,7 +188,7 @@
 	tied_human.drop_held_item(drawn_melee_weapon)
 	return FALSE
 
-/// Tells the AI to unwield *something*, prioritizing melee
+/// Tells the AI to unholster *something*, prioritizing melee
 /datum/human_ai_brain/proc/unholster_any_weapon()
 	if(unholster_melee())
 		tied_human.a_intent_change(INTENT_GRAB)
@@ -177,3 +200,14 @@
 		tied_human.a_intent_change(INTENT_GRAB)
 		return TRUE
 	// insert any viable weapon slot macros in here
+
+/// Tells the AI to holster any weapon that is currently in their hands
+/datum/human_ai_brain/proc/holster_any_weapon()
+	holster_primary()
+	holster_melee()
+	// insert any viable holster_weapon proc in here
+
+/// Getter for AI squad datum
+/datum/human_ai_brain/proc/get_squad()
+	RETURN_TYPE(/datum/human_ai_squad)
+	return SShuman_ai.squad_id_dict["[squad_id]"]

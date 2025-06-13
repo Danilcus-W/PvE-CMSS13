@@ -16,12 +16,12 @@
 	current_cover = null
 	in_cover = FALSE
 
-/datum/human_ai_brain/proc/on_shot_inside_cover(angle, atom/source)
+/datum/human_ai_brain/proc/damaged_inside_cover(atom/source, angle)
 	// Cover isn't working. Charge!
 	end_cover()
 
 /// Try to get the AI to find a suitable cover tile based on the angle a projectile came from.
-/datum/human_ai_brain/proc/try_cover(angle, atom/source)
+/datum/human_ai_brain/proc/try_cover(atom/source, angle)
 	if(!COOLDOWN_FINISHED(src, cover_search_cooldown))
 		return
 

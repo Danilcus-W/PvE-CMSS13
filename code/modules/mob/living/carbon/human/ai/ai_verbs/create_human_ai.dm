@@ -27,16 +27,6 @@
 
 	admin_holder.create_ai_humans(usr)
 
-/// Topic stuff ///
-
-/datum/admins/Topic(href, href_list)
-	..()
-	if(href_list["create_ai_humans_list"])
-		if(!check_rights(R_SPAWN))
-			return
-
-		create_ai_humans_list(href_list)
-
 /datum/admins/proc/create_ai_humans_list(href_list)
 	if(SSticker?.current_state < GAME_STATE_PLAYING)
 		alert("Please wait until the game has started before spawning humans")
@@ -101,14 +91,17 @@
 		spawned_human.face_dir(usr.dir)
 
 		spawned_human.AddComponent(/datum/component/human_ai)
+		var/datum/human_ai_brain/brain = spawned_human.get_ai_brain()
+
 		arm_equipment(spawned_human, job_name, TRUE, FALSE)
+		brain.appraise_inventory() // Incase arm_equipment() is somehow overriden
 
 		if(set_squad)
 			var/datum/human_ai_squad/squad = SShuman_ai.get_squad(squad_name)
-			squad.add_to_squad(spawned_human.get_ai_brain())
+			squad.add_to_squad(brain)
 
 			if(squad_leader)
-				squad.set_squad_leader(spawned_human.get_ai_brain())
+				squad.set_squad_leader(brain)
 				href_list["spawn_in"] = "squad"
 				squad_leader = FALSE
 
