@@ -85,7 +85,7 @@
 	return (locate(object_path) in equipment_map[object_type])
 
 /datum/human_ai_brain/proc/store_item(obj/item/object_ref, object_loc, slot_type)
-	if(!(object_ref in tied_human.contents_twice()))
+	if(object_ref.loc != tied_human)
 		return
 
 	if(object_ref in equipped_items_original_loc)
@@ -173,8 +173,6 @@
 		previous_faction = tied_human.faction
 		var/datum/human_ai_faction/our_faction = SShuman_ai.human_ai_factions[tied_human.faction]
 		our_faction?.apply_faction_data(src)
-
-	recalculate_containers()
 
 	/*if(tied_human.shoes && !primary_melee) // snowflake bootknife check
 		var/obj/item/weapon/knife = locate() in tied_human.shoes
@@ -269,13 +267,15 @@
 	item_slot_appraisal_loop(tied_human.r_store, "right_pocket")
 
 /datum/human_ai_brain/proc/appraise_armor()
-	if(tied_human.wear_suit && tied_human.loc) // being in nullspace makes lights play weirdly
-		var/obj/item/clothing/suit/armor = tied_human.wear_suit
-		if(!armor.light_on && armor?:light_holder)
-			armor.turn_light(tied_human, TRUE)
-
-	if(!istype(tied_human.wear_suit, /obj/item/clothing/suit/storage))
+	if(!istype(tied_human.wear_suit, /obj/item/clothing/suit))
 		return
+
+	if(istype(tied_human.wear_suit, /obj/item/clothing/suit) && tied_human.loc) // being in nullspace makes lights play weirdly
+		var/obj/item/clothing/suit/worn_armor = tied_human.wear_suit
+		if(!worn_armor.has_light)
+			return
+		else if(!worn_armor.light_on)
+			worn_armor.turn_light(tied_human, TRUE)
 
 	var/obj/item/clothing/suit/storage/storage_suit = tied_human.wear_suit
 	for(var/id in equipment_map)
@@ -286,7 +286,11 @@
 			equipment_map[id] -= item
 
 	RegisterSignal(storage_suit, COMSIG_PARENT_QDELETING, PROC_REF(on_item_delete), TRUE)
-	item_slot_appraisal_loop(storage_suit.pockets, "armor")
+	for(var/obj/item/clothing/accessory/storage/armour_webbing in storage_suit.accessories)
+		item_slot_appraisal_loop(armour_webbing, "armor")
+		return
+	if(storage_suit.get_pockets())
+		item_slot_appraisal_loop(storage_suit.pockets, "armor")
 
 /datum/human_ai_brain/proc/appraise_uniform()
 	var/obj/item/clothing/accessory/storage/located_storage = locate(/obj/item/clothing/accessory/storage) in tied_human.w_uniform.accessories
